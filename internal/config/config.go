@@ -74,7 +74,7 @@ func Load() (*Config, error) {
 		TLSKeyFile:         os.Getenv("TLS_KEY_FILE"),
 		SessionTimeout:     getEnvInt("SESSION_TIMEOUT_MINUTES", 60),
 		InitAdminUser:      getEnv("INIT_ADMIN_USER", "admin"),
-		InitAdminPass:      os.Getenv("INIT_ADMIN_PASS"),
+		InitAdminPass:      strings.TrimSpace(os.Getenv("INIT_ADMIN_PASS")),
 	}
 
 	return cfg, cfg.validate()
