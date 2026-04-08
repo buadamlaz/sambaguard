@@ -62,9 +62,25 @@ make setup-env
 # Start
 docker compose up -d
 
-# First-run: check logs for the auto-generated admin password
-docker compose logs sambaguard | grep -A3 "generated admin"
+# First-run: retrieve the auto-generated admin credentials
+docker compose logs sambaguard | grep -A8 "FIRST RUN\|SAMBAGUARD"
 ```
+
+On first run, you will see a box like this in the logs:
+
+```
+╔══════════════════════════════════════════════════════╗
+║          SAMBAGUARD — FIRST RUN CREDENTIALS          ║
+╠══════════════════════════════════════════════════════╣
+║  Username : admin                                    ║
+║  Password : xK9mP2vQ8nR4...                         ║
+╠══════════════════════════════════════════════════════╣
+║  ⚠  Change this password immediately after login!   ║
+╚══════════════════════════════════════════════════════╝
+```
+
+> **Note:** Leave `INIT_ADMIN_PASS` empty in `.env` to auto-generate a secure random password.
+> The credentials box is only shown once — on the very first startup when the database is empty.
 
 Open **http://your-server:8090** and sign in.
 
