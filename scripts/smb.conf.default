@@ -1,0 +1,14 @@
+# Default smb.conf — managed by Samba Panel
+# This file will be overwritten when you apply configuration changes.
+[global]
+   workgroup = WORKGROUP
+   server string = Samba Server
+   security = user
+   map to guest = Bad User
+   dns proxy = no
+   log level = 1
+   max log size = 50
+   server role = standalone server
+   obey pam restrictions = yes
+   unix password sync = no
+   usershare allow guests = no

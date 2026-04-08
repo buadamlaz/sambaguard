@@ -1,0 +1,73 @@
+services:
+  sambaguard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sambaguard
+    restart: unless-stopped
+
+    # Network mode host is required for Samba to work correctly
+    # (NetBIOS/SMB requires specific ports on the host network)
+    network_mode: host
+
+    # Minimal capability set needed to manage OS users and Samba
+    cap_drop:
+      - ALL
+    cap_add:
+      - SYS_ADMIN    # user/group management
+      - NET_ADMIN    # Samba networking
+      - DAC_OVERRIDE # config file access
+
+    # Volumes
+    volumes:
+      - sambaguard-data:/var/lib/sambaguard
+      - sambaguard-logs:/var/log/sambaguard
+      - samba-config:/etc/samba
+      - samba-shares:/srv/samba
+
+    environment:
+      # ── REQUIRED — generate with: openssl rand -hex 32 ────────────────────
+      JWT_SECRET: "${JWT_SECRET}"
+      CSRF_SECRET: "${CSRF_SECRET}"
+
+      # ── Optional — sensible defaults provided ─────────────────────────────
+      HOST: "0.0.0.0"
+      PORT: "8090"
+      ENVIRONMENT: "${ENVIRONMENT:-production}"
+
+      DATABASE_PATH: "/var/lib/sambaguard/panel.db"
+      SMB_CONF_PATH: "/etc/samba/smb.conf"
+      SMB_STAGING_PATH: "/var/lib/sambaguard/smb.conf.staging"
+      SMB_BACKUP_DIR: "/var/lib/sambaguard/backups"
+
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
+      AUDIT_FILE: "/var/log/sambaguard/audit.log"
+
+      BCRYPT_COST: "${BCRYPT_COST:-12}"
+      RATE_LIMIT_LOGIN_ATTEMPTS: "${RATE_LIMIT_LOGIN_ATTEMPTS:-5}"
+      RATE_LIMIT_WINDOW_SECONDS: "${RATE_LIMIT_WINDOW_SECONDS:-900}"
+
+      JWT_ACCESS_EXPIRY_MINUTES: "${JWT_ACCESS_EXPIRY_MINUTES:-15}"
+      JWT_REFRESH_EXPIRY_HOURS: "${JWT_REFRESH_EXPIRY_HOURS:-168}"
+
+      # ── First-run admin bootstrap ─────────────────────────────────────────
+      # Leave INIT_ADMIN_PASS empty to auto-generate (printed to logs)
+      INIT_ADMIN_USER: "${INIT_ADMIN_USER:-admin}"
+      INIT_ADMIN_PASS: "${INIT_ADMIN_PASS:-}"
+
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8090/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  sambaguard-data:
+    driver: local
+  sambaguard-logs:
+    driver: local
+  samba-config:
+    driver: local
+  samba-shares:
+    driver: local

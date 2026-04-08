@@ -1,0 +1,35 @@
+# Compiled binaries
+bin/
+*.exe
+*.exe~
+
+# Environment — NEVER commit secrets
+.env
+
+# Database
+*.db
+*.db-wal
+*.db-shm
+
+# Go module cache
+vendor/
+
+# Coverage reports
+coverage.out
+coverage.html
+
+# Build artifacts
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

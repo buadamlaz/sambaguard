@@ -1,0 +1,12 @@
+# Normalize line endings to LF in the repository
+* text=auto eol=lf
+
+# Shell scripts must use LF
+*.sh text eol=lf
+
+# Go source files
+*.go text eol=lf
+
+# Windows-specific files (if any)
+*.bat text eol=crlf
+*.cmd text eol=crlf
