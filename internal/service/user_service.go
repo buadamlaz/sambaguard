@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"regexp"
 	"time"
 	"unicode/utf8"
@@ -268,12 +269,19 @@ func (s *PanelUserService) EnsureBootstrapAdmin(username, password string) error
 		if err != nil {
 			return err
 		}
-		s.log.Warn("═══════════════════════════════════════════════════════════")
-		s.log.Warn("FIRST RUN: generated admin credentials")
-		s.log.Warn("  Username: " + username)
-		s.log.Warn("  Password: " + password)
-		s.log.Warn("  CHANGE THIS PASSWORD IMMEDIATELY AFTER FIRST LOGIN")
-		s.log.Warn("═══════════════════════════════════════════════════════════")
+		// Print directly to stdout with ANSI colors so it's visible in docker logs
+		// regardless of the structured JSON log format.
+		fmt.Fprintf(os.Stdout, "\n")
+		fmt.Fprintf(os.Stdout, "\033[32m╔══════════════════════════════════════════════════════╗\033[0m\n")
+		fmt.Fprintf(os.Stdout, "\033[32m║          SAMBAGUARD — FIRST RUN CREDENTIALS          ║\033[0m\n")
+		fmt.Fprintf(os.Stdout, "\033[32m╠══════════════════════════════════════════════════════╣\033[0m\n")
+		fmt.Fprintf(os.Stdout, "\033[32m║\033[0m  Username : \033[1;33m%-41s\033[0m\033[32m║\033[0m\n", username)
+		fmt.Fprintf(os.Stdout, "\033[32m║\033[0m  Password : \033[1;33m%-41s\033[0m\033[32m║\033[0m\n", password)
+		fmt.Fprintf(os.Stdout, "\033[32m╠══════════════════════════════════════════════════════╣\033[0m\n")
+		fmt.Fprintf(os.Stdout, "\033[32m║\033[0m  \033[1;31m⚠  Change this password immediately after login!\033[0m  \033[32m║\033[0m\n")
+		fmt.Fprintf(os.Stdout, "\033[32m╚══════════════════════════════════════════════════════╝\033[0m\n")
+		fmt.Fprintf(os.Stdout, "\n")
+		s.log.Warn("first-run admin account created", zap.String("username", username))
 	}
 
 	hash, err := s.auth.HashPassword(password)
