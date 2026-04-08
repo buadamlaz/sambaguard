@@ -111,18 +111,29 @@ function app() {
     },
 
     async tryRefresh() {
+      // Use raw fetch so a 401 (no session) is treated as a normal state,
+      // not an unhandled exception that pollutes the browser console.
       try {
-        const res = await this.post('/api/v1/auth/refresh', {}, { skipAuth: true, skipCSRF: true });
-        _accessToken = res.access_token;
+        const res = await fetch('/api/v1/auth/refresh', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        });
+        if (!res.ok) {
+          _accessToken = null;
+          this.isAuthenticated = false;
+          return;
+        }
+        const data = await res.json();
+        _accessToken = data.access_token;
         this.isAuthenticated = true;
 
         // Load user info
         const me = await this.get('/api/v1/auth/me');
         this.currentUser = me;
 
-        this.scheduleRefresh(res.expires_in);
+        this.scheduleRefresh(data.expires_in);
       } catch {
-        // No valid refresh token — user must log in
         _accessToken = null;
         this.isAuthenticated = false;
       }
