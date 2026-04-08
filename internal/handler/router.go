@@ -109,12 +109,14 @@ func NewRouter(cfg *config.Config, db *database.DB, log *zap.Logger) (http.Handl
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(chimw.SetHeader("Content-Type", "application/json"))
 
-		// Public: auth endpoints (rate limited)
+		// Public: auth endpoints
+		// Only login is rate-limited; refresh uses httpOnly cookie and has its own
+		// abuse-protection (token revocation + expiry), so a separate limiter is not needed.
 		r.Group(func(r chi.Router) {
 			r.Use(loginLimiter.Limit)
 			r.Post("/auth/login", authLogin(svc, cfg))
-			r.Post("/auth/refresh", authRefresh(svc))
 		})
+		r.Post("/auth/refresh", authRefresh(svc))
 
 		// Protected: all other endpoints require valid JWT
 		r.Group(func(r chi.Router) {
